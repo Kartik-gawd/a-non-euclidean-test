@@ -3,17 +3,18 @@ import { ACESFilmicToneMapping, SRGBColorSpace } from 'three';
 import { Suspense } from 'react';
 import { Perf } from 'r3f-perf';
 
-import { PhysicsWorld } from './core/PhysicsWorld';
-import { Player } from './core/Player';
-import { Controls } from './core/Controls';
-import { PrimaryWorld } from './scenes/PrimaryWorld';
-import { PerfOverlay } from './components/ui/PerfOverlay';
-import { useGameStore } from './store/gameStore';
+import { PhysicsWorld }   from './core/PhysicsWorld';
+import { Player }         from './core/Player';
+import { Controls }       from './core/Controls';
+import { PrimaryWorld }   from './scenes/PrimaryWorld';
+import { PerfOverlay }    from './components/ui/PerfOverlay';
+import { PostProcessing } from './components/ui/PostProcessing';
+import { useGameStore }   from './store/gameStore';
 
 import './App.css';
 
 export default function App() {
-  const debugMode = useGameStore((s) => s.debugMode);
+  const debugMode       = useGameStore((s) => s.debugMode);
   const isPointerLocked = useGameStore((s) => s.isPointerLocked);
 
   return (
@@ -49,13 +50,12 @@ export default function App() {
         </Suspense>
 
         <Controls />
+        <PostProcessing />
       </Canvas>
 
       <PerfOverlay />
 
-      {isPointerLocked && (
-        <div className="crosshair" aria-hidden="true" />
-      )}
+      {isPointerLocked && <div className="crosshair" aria-hidden="true" />}
 
       {!isPointerLocked && (
         <div className="lock-prompt" aria-live="polite">
