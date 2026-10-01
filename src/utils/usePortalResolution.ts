@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import React, { useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Vector3 } from 'three';
 
@@ -22,16 +22,19 @@ const _cameraPos = new Vector3();
 export function usePortalResolution({
   portalPosition,
   maxResolution = 512,
-  minResolution = 64,
-  fullQualityDistance = 4,
+  minResolution = 128,
+  fullQualityDistance = 5,
   cullDistance = 40,
 }: UsePortalResolutionOptions) {
-  const { camera, size } = useThree();
-  const resolutionRef = useRef<PortalResolution>({
+  const { camera } = useThree();
+  const [resolutionState, setResolutionState] = React.useState<PortalResolution>({
     width: minResolution,
     height: minResolution,
-    visible: false,
+    visible: true,
   });
+
+  // Keep a ref to prevent unnecessary state updates
+  const currentRes = useRef(resolutionState);
 
   useFrame(() => {
     _portalPos.set(...portalPosition);
@@ -39,22 +42,25 @@ export function usePortalResolution({
 
     const dist = _cameraPos.distanceTo(_portalPos);
 
+    let nextVisible = true;
+    let nextWidth = minResolution;
+
     if (dist > cullDistance) {
-      resolutionRef.current.visible = false;
-      resolutionRef.current.width = minResolution;
-      resolutionRef.current.height = minResolution;
-      return;
+      nextVisible = false;
+      nextWidth = minResolution;
+    } else {
+      nextVisible = true;
+      const t = Math.max(0, Math.min(1, 1 - (dist - fullQualityDistance) / (cullDistance - fullQualityDistance)));
+      const res = Math.round(minResolution + (maxResolution - minResolution) * t);
+      nextWidth = Math.pow(2, Math.round(Math.log2(res)));
     }
 
-    resolutionRef.current.visible = true;
-
-    const t = Math.max(0, Math.min(1, 1 - (dist - fullQualityDistance) / (cullDistance - fullQualityDistance)));
-    const res = Math.round(minResolution + (maxResolution - minResolution) * t);
-    const snapped = Math.pow(2, Math.round(Math.log2(res)));
-
-    resolutionRef.current.width = snapped;
-    resolutionRef.current.height = snapped;
+    if (currentRes.current.width !== nextWidth || currentRes.current.visible !== nextVisible) {
+      const newState = { width: nextWidth, height: nextWidth, visible: nextVisible };
+      currentRes.current = newState;
+      setResolutionState(newState);
+    }
   });
 
-  return resolutionRef;
+  return resolutionState;
 }

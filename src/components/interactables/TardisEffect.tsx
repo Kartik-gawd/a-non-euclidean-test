@@ -1,9 +1,7 @@
-import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
-import { MeshPortalMaterial, RoundedBox, Text } from '@react-three/drei';
-import { RigidBody, CuboidCollider } from '@react-three/rapier';
-import { Mesh, Color } from 'three';
-import { useGameStore } from '../store/gameStore';
+import { Text } from '@react-three/drei';
+import { CuboidCollider } from '@react-three/rapier';
+import { Dimension, RigidBody } from '../../core/Dimension';
+import { Portal } from './Portal';
 
 function CastleInterior() {
   return (
@@ -13,15 +11,17 @@ function CastleInterior() {
       <pointLight position={[10, 4, 10]} intensity={1.5} color="#3388aa" distance={20} />
       <pointLight position={[-10, 4, -10]} intensity={1.5} color="#aa3355" distance={20} />
 
-      <mesh position={[0, -0.01, 0]} receiveShadow>
-        <planeGeometry args={[60, 60]} />
-        <meshStandardMaterial color="#1a1225" roughness={0.9} />
-      </mesh>
+      <RigidBody type="fixed" position={[0, -0.05, 0]}>
+        <mesh receiveShadow>
+          <boxGeometry args={[60, 0.1, 60]} />
+          <meshStandardMaterial color="#1a1225" roughness={0.9} />
+        </mesh>
+      </RigidBody>
 
       <mesh position={[0, 20, 0]}>
         <planeGeometry args={[60, 60]} />
         <meshStandardMaterial color="#0d0a18" side={2} />
-      </mesh>
+      </mesh>w
 
       {[-28, -14, 0, 14, 28].map((x) =>
         [-28, -14, 0, 14, 28].map((z) => (
@@ -48,15 +48,28 @@ function CastleInterior() {
       </mesh>
 
       <Text
-        position={[0, 12, -27]}
-        fontSize={1.5}
+        position={[0, 20, -27]}
+        fontSize={1.2}
         color="#ccaa44"
         anchorX="center"
         anchorY="middle"
         font={undefined}
       >
-        THE GREAT HALL
+        great hall
       </Text>
+
+      <Portal
+        id="tardis_exit"
+        position={[0, 1.5, 0.5]}
+        rotation={[0, Math.PI, 0]}
+        width={1.0}
+        height={2.8}
+        targetPosition={[0, 1.5, -11]}
+        targetRotation={[0, 0, 0]}
+        targetDimension={0}
+      >
+        <meshBasicMaterial color="#000" />
+      </Portal>
     </>
   );
 }
@@ -98,24 +111,40 @@ function BoothExterior() {
 }
 
 export function TardisEffect({ position = [0, 0, -12] as [number, number, number] }) {
-  const doorRef = useRef<Mesh>(null);
-
   return (
     <group position={position}>
       <BoothExterior />
 
-      <mesh ref={doorRef} position={[0, 1.5, 0.71]}>
-        <planeGeometry args={[1.0, 2.8]} />
-        <MeshPortalMaterial side={2} worldUnits blur={0.05}>
+      <Portal
+        id="tardis_entrance"
+        position={[0, 1.5, 0.71]}
+        width={1.0}
+        height={2.8}
+        targetPosition={[0, 1001.5, 12]}
+        targetRotation={[0, 0, 0]}
+        targetDimension={1}
+      >
+        <Dimension id={1}>
           <CastleInterior />
-        </MeshPortalMaterial>
-      </mesh>
+        </Dimension>
+      </Portal>
 
       <RigidBody type="fixed" position={[0, 1.5, 0]}>
         <CuboidCollider args={[0.7, 1.5, 0.7]} />
       </RigidBody>
 
       <pointLight position={[0, 3.5, 0]} intensity={0.5} color="#8866ff" distance={3} />
+      
+      {/* 
+        This is the ACTUAL physical CastleInterior in the main world.
+        We place it 1000m in the sky so it doesn't overlap with Layer 0 geometry.
+        The one inside the Portal above is purely visual for the doorway illusion.
+      */}
+      <group position={[0, 1000, 12]}>
+        <Dimension id={1}>
+          <CastleInterior />
+        </Dimension>
+      </group>
     </group>
   );
 }

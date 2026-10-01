@@ -7,6 +7,7 @@ export interface InputState {
   right: boolean;
   jump: boolean;
   sprint: boolean;
+  interact: boolean;
 }
 
 type KeyMap = Record<string, keyof InputState>;
@@ -23,6 +24,7 @@ const KEY_MAP: KeyMap = {
   Space: 'jump',
   ShiftLeft: 'sprint',
   ShiftRight: 'sprint',
+  KeyE: 'interact',
 };
 
 export interface InputController {
@@ -39,6 +41,7 @@ export function useInput(): InputController {
     right: false,
     jump: false,
     sprint: false,
+    interact: false,
   });
 
   const setAction = (action: keyof InputState, value: boolean) => {

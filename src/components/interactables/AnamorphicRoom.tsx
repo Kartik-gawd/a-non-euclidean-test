@@ -1,7 +1,8 @@
 import { useRef, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { RigidBody } from '@react-three/rapier';
-import { Mesh, Vector3, Color, MeshStandardMaterial } from 'three';
+import { RigidBody } from '../../core/Dimension';
+import { Mesh, Vector3, MeshStandardMaterial } from 'three';
+import { useGameStore } from '../../store/gameStore';
 
 const SWEET_SPOT = new Vector3(0, 1.6, 6);
 const ALIGNMENT_RADIUS = 1.2;
@@ -84,10 +85,9 @@ const STEPS: StepData[] = [
 
 interface FloatingBlockProps {
   step: StepData;
-  alignment: number;
 }
 
-function FloatingBlock({ step, alignment }: FloatingBlockProps) {
+function FloatingBlock({ step }: FloatingBlockProps) {
   const meshRef = useRef<Mesh>(null);
   const matRef = useRef<MeshStandardMaterial>(null);
 
@@ -102,6 +102,7 @@ function FloatingBlock({ step, alignment }: FloatingBlockProps) {
   useFrame((_, delta) => {
     if (!meshRef.current || !matRef.current) return;
 
+    const alignment = useGameStore.getState().anamorphicAlignment;
     const lerpSpeed = delta * 3;
     meshRef.current.position.lerp(alignment > 0.7 ? alignedVec : targetPos, lerpSpeed);
 
@@ -160,7 +161,9 @@ export function AnamorphicRoom({ position = [-18, 0, 0] }: AnamorphicRoomProps) 
 
   useFrame(() => {
     const dist = camera.position.distanceTo(sweetSpotWorld);
-    alignmentRef.current = Math.max(0, 1 - dist / ALIGNMENT_RADIUS);
+    const align = Math.max(0, 1 - dist / ALIGNMENT_RADIUS);
+    alignmentRef.current = align;
+    useGameStore.getState().setAnamorphicAlignment(align);
   });
 
   return (
@@ -183,7 +186,7 @@ export function AnamorphicRoom({ position = [-18, 0, 0] }: AnamorphicRoomProps) 
       ))}
 
       {STEPS.map((step, i) => (
-        <FloatingBlock key={i} step={step} alignment={alignmentRef.current} />
+        <FloatingBlock key={i} step={step} />
       ))}
 
       <mesh position={[0, 0.01, 6]} rotation={[-Math.PI / 2, 0, 0]}>

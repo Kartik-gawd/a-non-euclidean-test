@@ -26,6 +26,8 @@ export function PerfOverlay() {
   const toggleDebug     = useGameStore((s) => s.toggleDebug);
   const isPointerLocked = useGameStore((s) => s.isPointerLocked);
   const loopCount       = useGameStore((s) => s.loopCount);
+  const canGrab         = useGameStore((s) => s.canGrab);
+  const heldObject      = useGameStore((s) => s.heldObject);
 
   const fpsRef      = useRef<HTMLSpanElement>(null);
   const posRef      = useRef<HTMLSpanElement>(null);
@@ -55,35 +57,71 @@ export function PerfOverlay() {
     return () => cancelAnimationFrame(rafRef.current);
   }, [debugMode]);
 
-  if (!debugMode) return null;
-
   return (
-    <div style={overlayStyle}>
-      <div><b>FPS</b> <span ref={fpsRef}>--</span></div>
-      <div><b>POS</b> <span ref={posRef} style={{ fontSize: '11px' }}>--, --, --</span></div>
-      <div><b>GROUNDED</b> <span ref={groundedRef}>--</span></div>
-      <div><b>LOCKED</b> {isPointerLocked ? 'yes' : 'no'}</div>
-      <div style={sepStyle} />
-      <div><b>LOOP #</b> {loopCount}</div>
-      <div><b>ALIGN</b> <span ref={alignRef}>0%</span></div>
-      <div style={sepStyle} />
-      <div style={dimStyle}>[F3] toggle debug &nbsp;|&nbsp; [Esc] unlock</div>
-      <div style={dimStyle}>
-        <b style={{ color: '#88aaff' }}>TARDIS</b> z=-12 &nbsp;
-        <b style={{ color: '#ff8888' }}>LOOP</b> x=10 &nbsp;
-        <b style={{ color: '#aa88ff' }}>ANA</b> x=-20
-      </div>
-      <DebugToggleListener onToggle={toggleDebug} locked={isPointerLocked} />
-    </div>
+    <>
+      {/* Crosshair */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '6px',
+          height: '6px',
+          border: '1.5px solid rgba(255, 255, 255, 0.8)',
+          borderRadius: '50%',
+          pointerEvents: 'none',
+          zIndex: 1000,
+        }}
+      />
+      
+      {/* Interaction Hint */}
+      {(canGrab || heldObject) && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '55%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: 'rgba(255, 255, 255, 0.7)',
+            fontFamily: 'monospace',
+            pointerEvents: 'none',
+            zIndex: 1000,
+            textShadow: '1px 1px 2px black',
+          }}
+        >
+          [E] {heldObject ? 'Drop' : 'Grab'}
+        </div>
+      )}
+
+      {debugMode && (
+        <div style={overlayStyle}>
+          <div><b>FPS</b> <span ref={fpsRef}>--</span></div>
+          <div><b>POS</b> <span ref={posRef} style={{ fontSize: '11px' }}>--, --, --</span></div>
+          <div><b>GROUNDED</b> <span ref={groundedRef}>--</span></div>
+          <div><b>LOCKED</b> {isPointerLocked ? 'yes' : 'no'}</div>
+          <div style={sepStyle} />
+          <div><b>LOOP #</b> {loopCount}</div>
+          <div><b>ALIGN</b> <span ref={alignRef}>0%</span></div>
+          <div style={sepStyle} />
+          <div style={dimStyle}>[F3] toggle debug &nbsp;|&nbsp; [Esc] unlock</div>
+          <div style={dimStyle}>
+            <b style={{ color: '#88aaff' }}>TARDIS</b> z=-12 &nbsp;
+            <b style={{ color: '#ff8888' }}>LOOP</b> x=10 &nbsp;
+            <b style={{ color: '#aa88ff' }}>ANA</b> x=-20
+          </div>
+          <DebugToggleListener onToggle={toggleDebug} locked={isPointerLocked} />
+        </div>
+      )}
+    </>
   );
 }
 
-function DebugToggleListener({ onToggle, locked }: { onToggle: () => void; locked: boolean }) {
+function DebugToggleListener({ onToggle }: { onToggle: () => void; locked: boolean }) {
   useEffect(() => {
-    if (locked) return;
     const h = (e: KeyboardEvent) => { if (e.code === 'F3') { e.preventDefault(); onToggle(); } };
     window.addEventListener('keydown', h);
     return () => window.removeEventListener('keydown', h);
-  }, [locked, onToggle]);
+  }, [onToggle]);
   return null;
 }

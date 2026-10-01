@@ -9,18 +9,26 @@ import {
 } from '@react-three/postprocessing';
 import { BlendFunction } from 'postprocessing';
 import { Vector2 } from 'three';
-import { useGameStore } from '../store/gameStore';
-
-const _offset = new Vector2(0, 0);
+import { useGameStore } from '../../store/gameStore';
 
 export function PostProcessing() {
-  const isPointerLocked = useGameStore((s) => s.isPointerLocked);
-
   const chromaOffsetRef = useRef(new Vector2(0.0005, 0.0005));
   const targetChromaRef = useRef(new Vector2(0.0005, 0.0005));
 
+  const teleportTimeRef = useRef(0);
+
   useFrame((_, delta) => {
-    const t = delta * 4;
+    const { teleportRequest } = useGameStore.getState();
+    
+    if (teleportRequest && teleportRequest.time !== teleportTimeRef.current) {
+      teleportTimeRef.current = teleportRequest.time;
+      // Spike chromatic aberration
+      chromaOffsetRef.current.set(0.05, 0.05);
+    }
+    
+    // Smoothly decay back to normal
+    targetChromaRef.current.set(0.001, 0.001);
+    const t = delta * 10;
     chromaOffsetRef.current.lerp(targetChromaRef.current, t);
   });
 

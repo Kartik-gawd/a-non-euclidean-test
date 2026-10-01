@@ -1,28 +1,31 @@
 import { useRef } from 'react';
-import { DirectionalLight } from 'three';
-import { Grid, useHelper } from '@react-three/drei';
-import { RigidBody } from '@react-three/rapier';
-import { DirectionalLightHelper } from 'three';
+import { DirectionalLight, DirectionalLightHelper } from 'three';
+import { useHelper, Text } from '@react-three/drei';
+import { CuboidCollider } from '@react-three/rapier';
+import { RigidBody } from '../core/Dimension';
 import { useGameStore } from '../store/gameStore';
 import { TardisEffect } from '../components/interactables/TardisEffect';
 import { LoopHallway } from '../components/interactables/LoopHallway';
-import { AnamorphicRoom } from '../components/interactables/AnamorphicRoom';
+import { Obby } from '../components/interactables/Obby';
+import { WeightedCube } from '../components/interactables/WeightedCube';
+import { PressurePlate } from '../components/interactables/PressurePlate';
 
 export function PrimaryWorld() {
   const debugMode = useGameStore((s) => s.debugMode);
   const dirLightRef = useRef<DirectionalLight>(null!);
 
-  useHelper(debugMode ? dirLightRef : null, DirectionalLightHelper as any, 2, '#ffff00');
+  useHelper(debugMode ? dirLightRef : null, DirectionalLightHelper, 2, '#ffff00');
 
   return (
     <>
-      <ambientLight intensity={0.4} color="#b0c8ff" />
+      <ambientLight intensity={0.2} color="#ffffff" />
+      <hemisphereLight color="#555555" groundColor="#2a2a30" intensity={0.3} />
 
       <directionalLight
         ref={dirLightRef}
-        position={[10, 20, 10]}
-        intensity={1.8}
-        color="#fff8e7"
+        position={[20, 30, 20]}
+        intensity={1.0}
+        color="#e6e6e6"
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -35,25 +38,12 @@ export function PrimaryWorld() {
         shadow-bias={-0.0004}
       />
 
-      <Grid
-        position={[0, 0, 0]}
-        args={[200, 200]}
-        cellSize={1}
-        cellThickness={0.5}
-        cellColor="#3a3a4a"
-        sectionSize={5}
-        sectionThickness={1}
-        sectionColor="#5a5a8a"
-        fadeDistance={80}
-        fadeStrength={1}
-        followCamera={false}
-        infiniteGrid
-      />
-
-      <RigidBody type="fixed" position={[0, -0.05, 0]} colliders="cuboid">
-        <mesh receiveShadow visible={false}>
-          <boxGeometry args={[400, 0.1, 400]} />
-          <meshStandardMaterial />
+      {/* Solid Colored Floor */}
+      <RigidBody type="fixed" position={[0, -1.0, 0]}>
+        <CuboidCollider args={[200, 1.0, 200]} />
+        <mesh receiveShadow>
+          <boxGeometry args={[400, 2.0, 400]} />
+          <meshStandardMaterial color="#2d3748" roughness={0.9} />
         </mesh>
       </RigidBody>
 
@@ -75,8 +65,37 @@ export function PrimaryWorld() {
       )}
 
       <TardisEffect position={[0, 0, -12]} />
-      <LoopHallway position={[10, 0, 0]} />
-      <AnamorphicRoom position={[-20, 0, 0]} />
+      <Text position={[0, 4, -12]} fontSize={0.8} color="#ffffff" anchorX="center" anchorY="bottom" outlineWidth={0.02} outlineColor="#000000">
+        Bigger on the Inside
+      </Text>
+
+      <LoopHallway position={[10, 0.01, 0]} />
+      <Text position={[10, 4, 0]} fontSize={0.8} color="#ffffff" anchorX="center" anchorY="bottom" outlineWidth={0.02} outlineColor="#000000" rotation={[0, -Math.PI / 2, 0]}>
+        Infinite Loop Hallway
+      </Text>
+
+      <Obby position={[-15, 0, 0]} />
+      <Text position={[-15, 4, 0]} fontSize={0.8} color="#ffffff" anchorX="center" anchorY="bottom" outlineWidth={0.02} outlineColor="#000000" rotation={[0, Math.PI / 2, 0]}>
+        Obstacle Course
+      </Text>
+
+      {/* Navigation Breadcrumb Lines (Phase 4) */}
+      <mesh position={[0, -0.49, -6]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[0.2, 12]} />
+        <meshBasicMaterial color="#88aaff" transparent opacity={0.5} />
+      </mesh>
+      <mesh position={[5, -0.49, 0]} rotation={[-Math.PI / 2, 0, Math.PI / 2]}>
+        <planeGeometry args={[0.2, 10]} />
+        <meshBasicMaterial color="#ff8888" transparent opacity={0.5} />
+      </mesh>
+      <mesh position={[-10, -0.49, 0]} rotation={[-Math.PI / 2, 0, Math.PI / 2]}>
+        <planeGeometry args={[0.2, 20]} />
+        <meshBasicMaterial color="#aa88ff" transparent opacity={0.5} />
+      </mesh>
+
+      {/* Puzzles */}
+      <WeightedCube id="cube1" position={[0, 5, 0]} />
+      <PressurePlate position={[5, 0, 5]} onActivate={() => console.log('Plate activated!')} />
 
       <mesh position={[0, 0.01, -10]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[3, 2]} />

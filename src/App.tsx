@@ -8,7 +8,6 @@ import { Player }         from './core/Player';
 import { Controls }       from './core/Controls';
 import { PrimaryWorld }   from './scenes/PrimaryWorld';
 import { PerfOverlay }    from './components/ui/PerfOverlay';
-import { PostProcessing } from './components/ui/PostProcessing';
 import { useGameStore }   from './store/gameStore';
 
 import './App.css';
@@ -40,6 +39,7 @@ export default function App() {
         dpr={[1, 2]}
         flat={false}
       >
+        <color attach="background" args={['#e2e8f0']} />
         {debugMode && <Perf position="top-right" />}
 
         <Suspense fallback={null}>
@@ -50,7 +50,6 @@ export default function App() {
         </Suspense>
 
         <Controls />
-        <PostProcessing />
       </Canvas>
 
       <PerfOverlay />
