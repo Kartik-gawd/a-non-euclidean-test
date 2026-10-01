@@ -1,9 +1,11 @@
-import { Text } from '@react-three/drei';
+import { Text, useTexture } from '@react-three/drei';
 import { CuboidCollider } from '@react-three/rapier';
 import { Dimension, RigidBody } from '../../core/Dimension';
 import { Portal } from './Portal';
 
 function CastleInterior() {
+  const imageTexture = useTexture('/images/meme.png');
+
   return (
     <>
       <ambientLight intensity={0.3} color="#4433aa" />
@@ -21,41 +23,31 @@ function CastleInterior() {
       <mesh position={[0, 20, 0]}>
         <planeGeometry args={[60, 60]} />
         <meshStandardMaterial color="#0d0a18" side={2} />
-      </mesh>w
+      </mesh>
 
-      {[-28, -14, 0, 14, 28].map((x) =>
-        [-28, -14, 0, 14, 28].map((z) => (
-          <mesh key={`${x}-${z}`} position={[x, 0, z]} castShadow>
-            <cylinderGeometry args={[0.3, 0.35, 8, 8]} />
-            <meshStandardMaterial color="#2a2035" roughness={0.8} />
-          </mesh>
-        ))
-      )}
-
-      {[0, 1, 2, 3].map((i) => (
-        <group key={i} position={[0, i * 4 + 1, -25]}>
-          <mesh>
-            <boxGeometry args={[4, 3, 0.3]} />
-            <meshStandardMaterial color="#1a0f05" roughness={0.9} />
-          </mesh>
-          <pointLight position={[0, 0, 1]} intensity={0.8} color="#ff9933" distance={5} />
-        </group>
-      ))}
+     
 
       <mesh position={[0, 0.01, 0]}>
         <planeGeometry args={[6, 6]} />
         <meshStandardMaterial color="#3a2a55" roughness={0.4} metalness={0.1} />
       </mesh>
 
+      <mesh position={[0, 14, -26.8]}>
+        <planeGeometry args={[8, 5]} />
+        <meshBasicMaterial
+          map={imageTexture}
+          transparent
+        />
+      </mesh>
       <Text
-        position={[0, 20, -27]}
+        position={[0, 18, -27]}
         fontSize={1.2}
         color="#ccaa44"
         anchorX="center"
         anchorY="middle"
         font={undefined}
       >
-        great hall
+        P KA BHOSDA ITNA BADAA
       </Text>
 
       <Portal
