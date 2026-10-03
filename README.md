@@ -10,6 +10,6 @@
 Clone the repository and install dependencies:
 
 ```bash
-git clone <repository-url>
-cd <project-folder>
+git clone https://github.com/Kartik-gawd/a-non-euclidean-test.git
+cd a-non-euclidean-test
 npm install
